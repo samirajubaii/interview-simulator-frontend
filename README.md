@@ -2,7 +2,7 @@
 
 A React-based interview practice platform with real-time AI feedback, score tracking, and a fully responsive UI. This is the frontend client for the InterviewAI platform.
 
-**Live Demo:** _(coming soon)_
+**Live Demo:** [interview-simulator-frontend-omega.vercel.app](https://interview-simulator-frontend-omega.vercel.app/)
 **Backend Repo:** [interview-simulator-backend](https://github.com/samirajubaii/interview-simulator-backend)
 
 ## Features
