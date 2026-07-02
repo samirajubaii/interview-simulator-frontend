@@ -58,8 +58,6 @@ export default function Home() {
   const { isMobile, isTablet } = bp;
   const isSmall = isMobile || isTablet;
 
-  
-
   useEffect(() => {
     if (!isAuthenticated) return;
     api.get("/results")
@@ -88,9 +86,6 @@ export default function Home() {
         ]
       : SOCIAL_STATS;
 
-  // ─── Scroll helpers ────────────────────────────────────────────────────────
-  // Scrolls to a section by ID, accounting for sticky nav height.
-  // Does NOT check tagName — any element with the ID is valid.
   const scrollToElement = (id) => {
     const el = document.getElementById(id);
     if (!el) return;
@@ -99,7 +94,6 @@ export default function Home() {
     window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
   };
 
-  // If the mobile menu is open, close it first then scroll after reflow.
   const scrollToSection = (id) => {
     if (menuOpen) {
       pendingScrollRef.current = id;
@@ -109,8 +103,6 @@ export default function Home() {
     scrollToElement(id);
   };
 
-  // After the menu animates closed, run the pending scroll.
-  // setTimeout(0) waits for the DOM to repaint so getBoundingClientRect is accurate.
   useEffect(() => {
     if (menuOpen || !pendingScrollRef.current) return;
     const id = pendingScrollRef.current;
@@ -118,7 +110,6 @@ export default function Home() {
     const timer = setTimeout(() => scrollToElement(id), 50);
     return () => clearTimeout(timer);
   }, [menuOpen]);
-  // ──────────────────────────────────────────────────────────────────────────
 
   const startInterview = (role) => {
     const path = `/interview?role=${role}&difficulty=${selectedDifficulty}&ai=true`;
@@ -137,12 +128,43 @@ export default function Home() {
     scrollToSection("roles");
   };
 
+  // ── Mobile-boosted visual values ──────────────────────────────────────────
+  // On mobile, borders/backgrounds need higher opacity to be visible
+  const cardBorder = isMobile
+    ? "1px solid rgba(255,255,255,0.14)"
+    : "1px solid rgba(255,255,255,0.06)";
+  const cardBg = isMobile
+    ? "rgba(255,255,255,0.05)"
+    : "rgba(255,255,255,0.02)";
+  const statsBorder = isMobile
+    ? "1px solid rgba(255,255,255,0.14)"
+    : "1px solid rgba(255,255,255,0.06)";
+  const statsGap = isMobile
+    ? "rgba(255,255,255,0.14)"
+    : "rgba(255,255,255,0.06)";
+
   return (
     <div style={s.page}>
-      {/* AMBIENT BACKGROUND */}
-      <div style={s.ambientTop} />
-      <div style={s.ambientBottom} />
-      <div style={s.grid} />
+      {/* AMBIENT BACKGROUND — stronger on mobile */}
+      <div style={{
+        ...s.ambientTop,
+        background: isMobile
+          ? "radial-gradient(circle, rgba(99,102,241,0.28) 0%, transparent 70%)"
+          : "radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%)",
+      }} />
+      <div style={{
+        ...s.ambientBottom,
+        background: isMobile
+          ? "radial-gradient(circle, rgba(16,185,129,0.18) 0%, transparent 70%)"
+          : "radial-gradient(circle, rgba(16,185,129,0.08) 0%, transparent 70%)",
+      }} />
+      {/* Grid — slightly stronger on mobile */}
+      <div style={{
+        ...s.grid,
+        backgroundImage: isMobile
+          ? "linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)"
+          : "linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px)",
+      }} />
 
       {/* NAVBAR */}
       <nav ref={navRef} style={s.nav}>
@@ -152,19 +174,14 @@ export default function Home() {
             <span style={s.navName}>InterviewAI</span>
           </div>
 
-          {/* Hamburger — mobile only */}
           <button
             aria-label={menuOpen ? "Close menu" : "Open menu"}
-            style={{
-              ...s.hamburger,
-              display: isSmall ? "flex" : "none",
-            }}
+            style={{ ...s.hamburger, display: isSmall ? "flex" : "none" }}
             onClick={() => setMenuOpen((o) => !o)}
           >
             {menuOpen ? "✕" : "☰"}
           </button>
 
-          {/* Desktop links */}
           <div style={{ ...s.navLinks, display: isSmall ? "none" : "flex" }}>
             {["Features", "How It Works", "Reviews"].map((item) => (
               <button
@@ -186,7 +203,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Mobile menu */}
         {menuOpen && isSmall && (
           <div style={s.mobileMenu}>
             {["Features", "How It Works", "Reviews"].map((item) => (
@@ -221,7 +237,12 @@ export default function Home() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
       >
-        <div style={s.heroBadge}>
+        <div style={{
+          ...s.heroBadge,
+          // stronger border + bg on mobile
+          background: isMobile ? "rgba(99,102,241,0.18)" : "rgba(99,102,241,0.12)",
+          border: isMobile ? "1px solid rgba(99,102,241,0.5)" : "1px solid rgba(99,102,241,0.3)",
+        }}>
           <span style={s.heroBadgeDot} />
           AI Evaluation Active
         </div>
@@ -238,7 +259,9 @@ export default function Home() {
         <p style={{
           ...s.heroSub,
           fontSize: isMobile ? "15px" : s.heroSub.fontSize,
-          marginBottom: isMobile ? "28px" : s.heroSub.marginBottom ?? "36px",
+          marginBottom: isMobile ? "28px" : "36px",
+          // Lighter color on mobile so it reads better against dark bg
+          color: isMobile ? "#94a3b8" : "#64748b",
         }}>
           Role-specific questions. Real-time AI scoring. Feedback that helps you
           understand exactly where you stand — before the real thing.
@@ -254,6 +277,8 @@ export default function Home() {
             ...s.heroPrimary,
             justifyContent: "center",
             width: isMobile ? "100%" : "auto",
+            // Stronger shadow on mobile for depth
+            boxShadow: isMobile ? "0 0 24px rgba(99,102,241,0.4)" : "none",
           }} onClick={handleStartClick}>
             Start Practicing Free
             <span style={s.btnArrow}>→</span>
@@ -262,14 +287,22 @@ export default function Home() {
             ...s.heroSecondary,
             width: isMobile ? "100%" : "auto",
             textAlign: "center",
+            // More visible border on mobile
+            border: isMobile ? "1px solid rgba(255,255,255,0.22)" : "1px solid rgba(255,255,255,0.12)",
+            color: isMobile ? "#cbd5e1" : "#94a3b8",
           }} onClick={() => scrollToSection("how-it-works")}>
             See How It Works
           </button>
         </div>
 
-        {/* MINI SCORE PREVIEW */}
+        {/* SCORE PREVIEW — stronger on mobile */}
         <motion.div
-          style={s.scorePreview}
+          style={{
+            ...s.scorePreview,
+            background: isMobile ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.03)",
+            border: isMobile ? "1px solid rgba(255,255,255,0.14)" : "1px solid rgba(255,255,255,0.08)",
+            boxShadow: isMobile ? "0 4px 24px rgba(0,0,0,0.4)" : "none",
+          }}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4, duration: 0.6 }}
@@ -279,7 +312,11 @@ export default function Home() {
             <span style={s.scorePreviewLive}>● LIVE</span>
           </div>
           <p style={s.scorePreviewQ}>"Explain the difference between authentication and authorization."</p>
-          <div style={s.scorePreviewAnswer}>
+          <div style={{
+            ...s.scorePreviewAnswer,
+            background: isMobile ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.04)",
+            border: isMobile ? "1px solid rgba(255,255,255,0.12)" : "1px solid rgba(255,255,255,0.06)",
+          }}>
             Authentication verifies who the user is. Authorization determines what they can access...
           </div>
           <div style={s.scorePreviewResult}>
@@ -304,6 +341,8 @@ export default function Home() {
         ...s.statsRow,
         gridTemplateColumns: gridCols({ xs: 2, lg: 4 }, bp),
         margin: isMobile ? "0 16px 48px" : "0 auto 60px",
+        background: statsGap,
+        border: statsBorder,
       }}>
         {displayStats.map(({ value, label }, i) => (
           <motion.div
@@ -311,6 +350,8 @@ export default function Home() {
             style={{
               ...s.statItem,
               padding: isMobile ? "20px 12px" : "32px 24px",
+              // Slightly lighter bg on mobile so the grid lines between cells show
+              background: isMobile ? "#0d1220" : "#080c14",
             }}
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -326,10 +367,12 @@ export default function Home() {
         ))}
       </section>
 
-      <div style={s.divider} />
+      <div style={{
+        ...s.divider,
+        background: isMobile ? "rgba(255,255,255,0.10)" : "rgba(255,255,255,0.05)",
+      }} />
 
-      {/* DIFFICULTY + ROLES */}
-      {/* ↓ ID is on the outermost section element ↓ */}
+      {/* ROLES */}
       <section id="roles" style={{
         ...s.rolesSection,
         padding: isMobile ? "48px 20px" : isTablet ? "60px 32px" : s.rolesSection.padding,
@@ -344,24 +387,22 @@ export default function Home() {
           <p style={s.sectionSub}>Select your experience level and target role, then start immediately.</p>
         </motion.div>
 
-        {/* DIFFICULTY */}
         <div style={{
           ...s.difficultyRow,
           flexDirection: isMobile ? "column" : "row",
           alignItems: isMobile ? "flex-start" : "center",
         }}>
           <span style={s.configLabel}>Experience Level</span>
-          <div style={{
-            ...s.diffBtns,
-            width: isMobile ? "100%" : "auto",
-          }}>
+          <div style={{ ...s.diffBtns, width: isMobile ? "100%" : "auto" }}>
             {DIFFICULTIES.map(({ id, label, color, desc }) => (
               <button
                 key={id}
                 style={{
                   ...s.diffBtn,
                   flex: isMobile ? "1 1 0" : "0 0 auto",
-                  borderColor: selectedDifficulty === id ? color : "rgba(255,255,255,0.1)",
+                  borderColor: selectedDifficulty === id
+                    ? color
+                    : isMobile ? "rgba(255,255,255,0.18)" : "rgba(255,255,255,0.1)",
                   background: selectedDifficulty === id ? `${color}18` : "transparent",
                   color: selectedDifficulty === id ? color : "#94a3b8",
                 }}
@@ -374,7 +415,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* ROLES */}
         <div style={s.configLabel2}>Choose Your Role</div>
         <div style={{
           ...s.rolesGrid,
@@ -385,10 +425,12 @@ export default function Home() {
               key={id}
               style={{
                 ...s.roleCard,
-                borderColor: hoveredRole === id ? "rgba(99,102,241,0.6)" : "rgba(255,255,255,0.08)",
+                borderColor: hoveredRole === id
+                  ? "rgba(99,102,241,0.6)"
+                  : isMobile ? "rgba(255,255,255,0.14)" : "rgba(255,255,255,0.08)",
                 background: hoveredRole === id
                   ? "rgba(99,102,241,0.08)"
-                  : "rgba(255,255,255,0.03)",
+                  : isMobile ? "rgba(255,255,255,0.05)" : "rgba(255,255,255,0.03)",
               }}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -405,18 +447,21 @@ export default function Home() {
               </div>
               <span style={{
                 ...s.roleArrow,
-                opacity: hoveredRole === id ? 1 : 0,
-                transform: hoveredRole === id ? "translateX(0)" : "translateX(-8px)",
+                // Always show arrow on mobile (no hover on touch)
+                opacity: isMobile ? 1 : hoveredRole === id ? 1 : 0,
+                transform: isMobile ? "translateX(0)" : hoveredRole === id ? "translateX(0)" : "translateX(-8px)",
               }}>→</span>
             </motion.div>
           ))}
         </div>
       </section>
 
-      <div style={s.divider} />
+      <div style={{
+        ...s.divider,
+        background: isMobile ? "rgba(255,255,255,0.10)" : "rgba(255,255,255,0.05)",
+      }} />
 
       {/* HOW IT WORKS */}
-      {/* ↓ ID is on the outermost section element ↓ */}
       <section id="how-it-works" style={{
         ...s.howSection,
         padding: isMobile ? "48px 20px" : isTablet ? "60px 32px" : s.howSection.padding,
@@ -439,13 +484,27 @@ export default function Home() {
           ].map(({ n, title, desc }, i) => (
             <motion.div
               key={n}
-              style={s.step}
+              style={{
+                ...s.step,
+                // Add a subtle card treatment on mobile for each step
+                ...(isMobile && {
+                  background: "rgba(255,255,255,0.04)",
+                  border: "1px solid rgba(255,255,255,0.10)",
+                  borderRadius: "12px",
+                  padding: "16px",
+                }),
+              }}
               initial={{ opacity: 0, x: -20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.15 }}
             >
-              <span style={s.stepNum}>{n}</span>
+              <span style={{
+                ...s.stepNum,
+                // Stronger step number badge on mobile
+                background: isMobile ? "rgba(99,102,241,0.2)" : "rgba(99,102,241,0.1)",
+                border: isMobile ? "1px solid rgba(99,102,241,0.4)" : "1px solid rgba(99,102,241,0.2)",
+              }}>{n}</span>
               <div>
                 <h3 style={s.stepTitle}>{title}</h3>
                 <p style={s.stepDesc}>{desc}</p>
@@ -455,10 +514,12 @@ export default function Home() {
         </div>
       </section>
 
-      <div style={s.divider} />
+      <div style={{
+        ...s.divider,
+        background: isMobile ? "rgba(255,255,255,0.10)" : "rgba(255,255,255,0.05)",
+      }} />
 
       {/* FEATURES */}
-      {/* ↓ ID is on the outermost section element ↓ */}
       <section id="features" style={{
         ...s.featuresSection,
         padding: isMobile ? "48px 20px" : isTablet ? "60px 32px" : s.featuresSection.padding,
@@ -480,24 +541,34 @@ export default function Home() {
           {FEATURES.map(({ icon, title, desc }, i) => (
             <motion.div
               key={title}
-              style={s.featureCard}
+              style={{
+                ...s.featureCard,
+                background: cardBg,
+                border: cardBorder,
+              }}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
             >
-              <span style={s.featureIcon}>{icon}</span>
+              <span style={{
+                ...s.featureIcon,
+                // Brighter icon on mobile
+                color: isMobile ? "#818cf8" : "#6366f1",
+              }}>{icon}</span>
               <h3 style={s.featureTitle}>{title}</h3>
-              <p style={s.featureDesc}>{desc}</p>
+              <p style={{ ...s.featureDesc, color: isMobile ? "#64748b" : "#475569" }}>{desc}</p>
             </motion.div>
           ))}
         </div>
       </section>
 
-      <div style={s.divider} />
+      <div style={{
+        ...s.divider,
+        background: isMobile ? "rgba(255,255,255,0.10)" : "rgba(255,255,255,0.05)",
+      }} />
 
       {/* REVIEWS */}
-      {/* ↓ ID is on the outermost section element ↓ */}
       <section id="reviews" style={{
         ...s.reviewsSection,
         padding: isMobile ? "48px 20px" : isTablet ? "60px 32px" : s.reviewsSection.padding,
@@ -521,13 +592,20 @@ export default function Home() {
           ].map(({ text, name, role }, i) => (
             <motion.div
               key={name}
-              style={s.reviewCard}
+              style={{
+                ...s.reviewCard,
+                background: cardBg,
+                border: cardBorder,
+              }}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
             >
-              <p style={s.reviewText}>"{text}"</p>
+              <p style={{
+                ...s.reviewText,
+                color: isMobile ? "#cbd5e1" : "#94a3b8",
+              }}>"{text}"</p>
               <div style={s.reviewAuthor}>
                 <span style={s.reviewName}>{name}</span>
                 <span style={s.reviewRole}>{role}</span>
@@ -546,6 +624,9 @@ export default function Home() {
           style={{
             ...s.ctaBox,
             padding: isMobile ? "40px 24px" : s.ctaBox.padding,
+            background: isMobile ? "rgba(99,102,241,0.10)" : "rgba(99,102,241,0.06)",
+            border: isMobile ? "1px solid rgba(99,102,241,0.35)" : "1px solid rgba(99,102,241,0.2)",
+            boxShadow: isMobile ? "0 0 40px rgba(99,102,241,0.15)" : "none",
           }}
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -559,6 +640,7 @@ export default function Home() {
           <button style={{
             ...s.ctaBtn,
             width: isMobile ? "100%" : "auto",
+            boxShadow: isMobile ? "0 0 20px rgba(99,102,241,0.4)" : "none",
           }} onClick={handleStartClick}>
             Begin Your Interview →
           </button>
@@ -566,7 +648,10 @@ export default function Home() {
       </section>
 
       {/* FOOTER */}
-      <footer style={s.footer}>
+      <footer style={{
+        ...s.footer,
+        borderTop: isMobile ? "1px solid rgba(255,255,255,0.10)" : "1px solid rgba(255,255,255,0.05)",
+      }}>
         <div style={{
           ...s.footerInner,
           flexDirection: isMobile ? "column" : "row",
@@ -599,7 +684,6 @@ const s = {
     right: "-100px",
     width: "600px",
     height: "600px",
-    background: "radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%)",
     pointerEvents: "none",
     zIndex: 0,
   },
@@ -609,20 +693,16 @@ const s = {
     left: "-100px",
     width: "500px",
     height: "500px",
-    background: "radial-gradient(circle, rgba(16,185,129,0.08) 0%, transparent 70%)",
     pointerEvents: "none",
     zIndex: 0,
   },
   grid: {
     position: "fixed",
     inset: 0,
-    backgroundImage: "linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px)",
     backgroundSize: "80px 80px",
     pointerEvents: "none",
     zIndex: 0,
   },
-
-  // NAV
   nav: {
     position: "sticky",
     top: 0,
@@ -640,504 +720,149 @@ const s = {
     alignItems: "center",
     justifyContent: "space-between",
   },
-  navBrand: {
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-  },
-  navLogo: {
-    fontSize: "16px",
-    color: "#6366f1",
-  },
-  navName: {
-    fontSize: "15px",
-    fontWeight: "700",
-    letterSpacing: "-0.3px",
-    color: "#f1f5f9",
-  },
-  navLinks: {
-    alignItems: "center",
-    gap: "4px",
-  },
+  navBrand: { display: "flex", alignItems: "center", gap: "8px" },
+  navLogo: { fontSize: "16px", color: "#6366f1" },
+  navName: { fontSize: "15px", fontWeight: "700", letterSpacing: "-0.3px", color: "#f1f5f9" },
+  navLinks: { alignItems: "center", gap: "4px" },
   navLink: {
-    background: "none",
-    border: "none",
-    color: "#64748b",
-    fontSize: "13px",
-    fontWeight: "500",
-    cursor: "pointer",
-    padding: "6px 12px",
-    borderRadius: "6px",
-    transition: "color 0.2s",
+    background: "none", border: "none", color: "#64748b", fontSize: "13px",
+    fontWeight: "500", cursor: "pointer", padding: "6px 12px", borderRadius: "6px",
   },
   navOutlineBtn: {
-    background: "transparent",
-    border: "1px solid rgba(255,255,255,0.12)",
-    padding: "6px 14px",
-    borderRadius: "8px",
-    color: "#94a3b8",
-    fontSize: "13px",
-    cursor: "pointer",
+    background: "transparent", border: "1px solid rgba(255,255,255,0.12)",
+    padding: "6px 14px", borderRadius: "8px", color: "#94a3b8", fontSize: "13px", cursor: "pointer",
   },
-  navUserName: {
-    color: "#94a3b8",
-    fontSize: "13px",
-  },
+  navUserName: { color: "#94a3b8", fontSize: "13px" },
   navCta: {
-    background: "#6366f1",
-    border: "none",
-    padding: "8px 16px",
-    borderRadius: "8px",
-    color: "white",
-    fontSize: "13px",
-    fontWeight: "600",
-    cursor: "pointer",
-    marginLeft: "8px",
+    background: "#6366f1", border: "none", padding: "8px 16px", borderRadius: "8px",
+    color: "white", fontSize: "13px", fontWeight: "600", cursor: "pointer", marginLeft: "8px",
   },
   hamburger: {
-    background: "none",
-    border: "none",
-    color: "#f1f5f9",
-    fontSize: "20px",
-    cursor: "pointer",
-    padding: "0",
-    alignItems: "center",
-    justifyContent: "center",
-    minWidth: "44px",
-    minHeight: "44px",
-    borderRadius: "8px",
+    background: "none", border: "none", color: "#f1f5f9", fontSize: "20px",
+    cursor: "pointer", padding: "0", alignItems: "center", justifyContent: "center",
+    minWidth: "44px", minHeight: "44px", borderRadius: "8px",
   },
-
-  // HERO
   hero: {
-    maxWidth: "760px",
-    margin: "0 auto",
-    padding: "100px 24px 60px",
-    textAlign: "center",
-    position: "relative",
-    zIndex: 1,
+    maxWidth: "760px", margin: "0 auto", padding: "100px 24px 60px",
+    textAlign: "center", position: "relative", zIndex: 1,
   },
   heroBadge: {
-    display: "inline-flex",
-    alignItems: "center",
-    gap: "6px",
-    background: "rgba(99,102,241,0.12)",
-    border: "1px solid rgba(99,102,241,0.3)",
-    borderRadius: "100px",
-    padding: "4px 14px",
-    fontSize: "12px",
-    color: "#818cf8",
-    fontWeight: "500",
-    marginBottom: "32px",
+    display: "inline-flex", alignItems: "center", gap: "6px",
+    borderRadius: "100px", padding: "4px 14px", fontSize: "12px",
+    color: "#818cf8", fontWeight: "500", marginBottom: "32px",
   },
   heroBadgeDot: {
-    width: "6px",
-    height: "6px",
-    borderRadius: "50%",
-    background: "#22c55e",
-    boxShadow: "0 0 6px #22c55e",
+    width: "6px", height: "6px", borderRadius: "50%",
+    background: "#22c55e", boxShadow: "0 0 6px #22c55e",
   },
   heroTitle: {
-    fontSize: "clamp(36px, 6vw, 58px)",
-    fontWeight: "800",
-    lineHeight: "1.1",
-    letterSpacing: "-1.5px",
-    color: "#f8fafc",
-    margin: "0 0 20px",
+    fontSize: "clamp(36px, 6vw, 58px)", fontWeight: "800", lineHeight: "1.1",
+    letterSpacing: "-1.5px", color: "#f8fafc", margin: "0 0 20px",
   },
   heroAccent: {
     background: "linear-gradient(135deg, #6366f1, #818cf8)",
-    WebkitBackgroundClip: "text",
-    WebkitTextFillColor: "transparent",
+    WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
   },
   heroSub: {
-    fontSize: "17px",
-    color: "#64748b",
-    lineHeight: "1.7",
-    maxWidth: "540px",
-    margin: "0 auto 36px",
+    fontSize: "17px", color: "#64748b", lineHeight: "1.7",
+    maxWidth: "540px", margin: "0 auto 36px",
   },
   heroActions: {
-    display: "flex",
-    justifyContent: "center",
-    gap: "12px",
-    flexWrap: "wrap",
-    marginBottom: "60px",
+    display: "flex", justifyContent: "center", gap: "12px",
+    flexWrap: "wrap", marginBottom: "60px",
   },
   heroPrimary: {
-    background: "#6366f1",
-    border: "none",
-    padding: "14px 28px",
-    borderRadius: "10px",
-    color: "white",
-    fontSize: "15px",
-    fontWeight: "600",
-    cursor: "pointer",
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-    minHeight: "48px",
+    background: "#6366f1", border: "none", padding: "14px 28px", borderRadius: "10px",
+    color: "white", fontSize: "15px", fontWeight: "600", cursor: "pointer",
+    display: "flex", alignItems: "center", gap: "8px", minHeight: "48px",
   },
   heroSecondary: {
-    background: "transparent",
-    border: "1px solid rgba(255,255,255,0.12)",
-    padding: "14px 28px",
-    borderRadius: "10px",
-    color: "#94a3b8",
-    fontSize: "15px",
-    cursor: "pointer",
-    minHeight: "48px",
+    background: "transparent", padding: "14px 28px", borderRadius: "10px",
+    fontSize: "15px", cursor: "pointer", minHeight: "48px",
   },
   btnArrow: { fontSize: "16px" },
-
-  // SCORE PREVIEW
   scorePreview: {
-    background: "rgba(255,255,255,0.03)",
-    border: "1px solid rgba(255,255,255,0.08)",
-    borderRadius: "16px",
-    padding: "20px",
-    textAlign: "left",
-    backdropFilter: "blur(10px)",
-    wordBreak: "break-word",
+    borderRadius: "16px", padding: "20px", textAlign: "left",
+    backdropFilter: "blur(10px)", wordBreak: "break-word",
   },
-  scorePreviewHeader: {
-    display: "flex",
-    justifyContent: "space-between",
-    marginBottom: "16px",
-    gap: "8px",
-  },
+  scorePreviewHeader: { display: "flex", justifyContent: "space-between", marginBottom: "16px", gap: "8px" },
   scorePreviewLabel: { fontSize: "12px", color: "#475569", fontWeight: "600", textTransform: "uppercase", letterSpacing: "0.5px" },
   scorePreviewLive: { fontSize: "12px", color: "#22c55e", fontWeight: "600", flexShrink: 0 },
   scorePreviewQ: { fontSize: "14px", color: "#94a3b8", fontStyle: "italic", marginBottom: "12px" },
   scorePreviewAnswer: {
-    background: "rgba(255,255,255,0.04)",
-    border: "1px solid rgba(255,255,255,0.06)",
-    borderRadius: "8px",
-    padding: "12px",
-    fontSize: "13px",
-    color: "#cbd5e1",
-    marginBottom: "16px",
+    borderRadius: "8px", padding: "12px", fontSize: "13px",
+    color: "#cbd5e1", marginBottom: "16px",
   },
-  scorePreviewResult: {
-    display: "flex",
-    alignItems: "center",
-    gap: "12px",
-    marginBottom: "12px",
-  },
-  scoreBar: {
-    flex: 1,
-    height: "4px",
-    background: "rgba(255,255,255,0.08)",
-    borderRadius: "2px",
-    overflow: "hidden",
-  },
-  scoreBarFill: {
-    height: "100%",
-    background: "linear-gradient(90deg, #6366f1, #22c55e)",
-    borderRadius: "2px",
-  },
+  scorePreviewResult: { display: "flex", alignItems: "center", gap: "12px", marginBottom: "12px" },
+  scoreBar: { flex: 1, height: "4px", background: "rgba(255,255,255,0.08)", borderRadius: "2px", overflow: "hidden" },
+  scoreBarFill: { height: "100%", background: "linear-gradient(90deg, #6366f1, #22c55e)", borderRadius: "2px" },
   scoreNum: { fontSize: "14px", fontWeight: "700", color: "#22c55e", flexShrink: 0 },
   scorePreviewFeedback: { fontSize: "13px", color: "#475569", margin: 0 },
-
-  // STATS
   statsRow: {
-    maxWidth: "900px",
-    display: "grid",
-    gridTemplateColumns: "repeat(4, 1fr)",
-    gap: "1px",
-    background: "rgba(255,255,255,0.06)",
-    border: "1px solid rgba(255,255,255,0.06)",
-    borderRadius: "16px",
-    overflow: "hidden",
-    position: "relative",
-    zIndex: 1,
+    maxWidth: "900px", display: "grid", gridTemplateColumns: "repeat(4, 1fr)",
+    gap: "1px", borderRadius: "16px", overflow: "hidden", position: "relative", zIndex: 1,
   },
   statItem: {
-    padding: "32px 24px",
-    background: "#080c14",
-    textAlign: "center",
-    display: "flex",
-    flexDirection: "column",
-    gap: "4px",
+    padding: "32px 24px", textAlign: "center", display: "flex", flexDirection: "column", gap: "4px",
   },
   statValue: { fontSize: "28px", fontWeight: "800", color: "#f1f5f9", letterSpacing: "-1px" },
   statLabel: { fontSize: "12px", color: "#475569", fontWeight: "500" },
-
-  divider: {
-    height: "1px",
-    background: "rgba(255,255,255,0.05)",
-    maxWidth: "1100px",
-    margin: "0 auto",
-  },
-
-  // ROLES
-  rolesSection: {
-    maxWidth: "900px",
-    margin: "0 auto",
-    padding: "80px 24px",
-    position: "relative",
-    zIndex: 1,
-  },
-  sectionHeader: {
-    marginBottom: "48px",
-    textAlign: "center",
-  },
-  sectionTitle: {
-    fontSize: "clamp(24px, 5vw, 32px)",
-    fontWeight: "800",
-    letterSpacing: "-0.5px",
-    color: "#f1f5f9",
-    margin: "0 0 12px",
-  },
-  sectionSub: {
-    fontSize: "15px",
-    color: "#475569",
-    margin: 0,
-  },
-  difficultyRow: {
-    display: "flex",
-    alignItems: "center",
-    gap: "16px",
-    marginBottom: "40px",
-    flexWrap: "wrap",
-  },
-  configLabel: {
-    fontSize: "12px",
-    fontWeight: "600",
-    color: "#475569",
-    textTransform: "uppercase",
-    letterSpacing: "0.5px",
-    whiteSpace: "nowrap",
-  },
-  configLabel2: {
-    fontSize: "12px",
-    fontWeight: "600",
-    color: "#475569",
-    textTransform: "uppercase",
-    letterSpacing: "0.5px",
-    marginBottom: "16px",
-  },
-  diffBtns: {
-    display: "flex",
-    gap: "8px",
-    flexWrap: "nowrap",
-    flex: 1,
-  },
+  divider: { height: "1px", maxWidth: "1100px", margin: "0 auto" },
+  rolesSection: { maxWidth: "900px", margin: "0 auto", padding: "80px 24px", position: "relative", zIndex: 1 },
+  sectionHeader: { marginBottom: "48px", textAlign: "center" },
+  sectionTitle: { fontSize: "clamp(24px, 5vw, 32px)", fontWeight: "800", letterSpacing: "-0.5px", color: "#f1f5f9", margin: "0 0 12px" },
+  sectionSub: { fontSize: "15px", color: "#475569", margin: 0 },
+  difficultyRow: { display: "flex", alignItems: "center", gap: "16px", marginBottom: "40px", flexWrap: "wrap" },
+  configLabel: { fontSize: "12px", fontWeight: "600", color: "#475569", textTransform: "uppercase", letterSpacing: "0.5px", whiteSpace: "nowrap" },
+  configLabel2: { fontSize: "12px", fontWeight: "600", color: "#475569", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "16px" },
+  diffBtns: { display: "flex", gap: "8px", flexWrap: "nowrap", flex: 1 },
   diffBtn: {
-    background: "transparent",
-    border: "1px solid",
-    padding: "10px 16px",
-    borderRadius: "8px",
-    cursor: "pointer",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "flex-start",
-    gap: "2px",
-    transition: "all 0.2s",
-    minHeight: "48px",
+    background: "transparent", border: "1px solid", padding: "10px 16px", borderRadius: "8px",
+    cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "flex-start",
+    gap: "2px", transition: "all 0.2s", minHeight: "48px",
   },
   diffLabel: { fontSize: "13px", fontWeight: "600" },
   diffDesc: { fontSize: "11px", opacity: 0.7 },
-  rolesGrid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(2, 1fr)",
-    gap: "12px",
-  },
+  rolesGrid: { display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "12px" },
   roleCard: {
-    border: "1px solid",
-    borderRadius: "12px",
-    padding: "20px",
-    cursor: "pointer",
-    display: "flex",
-    alignItems: "center",
-    gap: "16px",
-    transition: "all 0.2s",
-    minHeight: "72px",
+    border: "1px solid", borderRadius: "12px", padding: "20px", cursor: "pointer",
+    display: "flex", alignItems: "center", gap: "16px", transition: "all 0.2s", minHeight: "72px",
   },
-  roleIcon: {
-    fontSize: "20px",
-    color: "#6366f1",
-    width: "32px",
-    flexShrink: 0,
-  },
-  roleInfo: {
-    flex: 1,
-    display: "flex",
-    flexDirection: "column",
-    gap: "3px",
-    minWidth: 0,
-  },
+  roleIcon: { fontSize: "20px", color: "#6366f1", width: "32px", flexShrink: 0 },
+  roleInfo: { flex: 1, display: "flex", flexDirection: "column", gap: "3px", minWidth: 0 },
   roleLabel: { fontSize: "15px", fontWeight: "700", color: "#f1f5f9" },
   roleDesc: { fontSize: "12px", color: "#475569", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" },
-  roleArrow: {
-    fontSize: "16px",
-    color: "#6366f1",
-    transition: "all 0.2s",
-    flexShrink: 0,
-  },
-
-  // HOW IT WORKS
-  howSection: {
-    maxWidth: "900px",
-    margin: "0 auto",
-    padding: "80px 24px",
-    position: "relative",
-    zIndex: 1,
-  },
-  steps: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "32px",
-  },
-  step: {
-    display: "flex",
-    gap: "20px",
-    alignItems: "flex-start",
-  },
-  stepNum: {
-    fontSize: "11px",
-    fontWeight: "700",
-    color: "#6366f1",
-    background: "rgba(99,102,241,0.1)",
-    border: "1px solid rgba(99,102,241,0.2)",
-    borderRadius: "6px",
-    padding: "4px 8px",
-    flexShrink: 0,
-    marginTop: "2px",
-  },
+  roleArrow: { fontSize: "16px", color: "#6366f1", transition: "all 0.2s", flexShrink: 0 },
+  howSection: { maxWidth: "900px", margin: "0 auto", padding: "80px 24px", position: "relative", zIndex: 1 },
+  steps: { display: "flex", flexDirection: "column", gap: "16px" },
+  step: { display: "flex", gap: "20px", alignItems: "flex-start" },
+  stepNum: { fontSize: "11px", fontWeight: "700", color: "#6366f1", borderRadius: "6px", padding: "4px 8px", flexShrink: 0, marginTop: "2px" },
   stepTitle: { fontSize: "17px", fontWeight: "700", color: "#f1f5f9", margin: "0 0 6px" },
   stepDesc: { fontSize: "14px", color: "#475569", margin: 0, lineHeight: "1.6" },
-
-  // FEATURES
-  featuresSection: {
-    maxWidth: "900px",
-    margin: "0 auto",
-    padding: "80px 24px",
-    position: "relative",
-    zIndex: 1,
-  },
-  featuresGrid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(3, 1fr)",
-    gap: "16px",
-  },
-  featureCard: {
-    background: "rgba(255,255,255,0.02)",
-    border: "1px solid rgba(255,255,255,0.06)",
-    borderRadius: "12px",
-    padding: "24px 20px",
-  },
-  featureIcon: { fontSize: "20px", color: "#6366f1", display: "block", marginBottom: "16px" },
+  featuresSection: { maxWidth: "900px", margin: "0 auto", padding: "80px 24px", position: "relative", zIndex: 1 },
+  featuresGrid: { display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "16px" },
+  featureCard: { borderRadius: "12px", padding: "24px 20px" },
+  featureIcon: { fontSize: "20px", display: "block", marginBottom: "16px" },
   featureTitle: { fontSize: "15px", fontWeight: "700", color: "#f1f5f9", margin: "0 0 8px" },
-  featureDesc: { fontSize: "13px", color: "#475569", margin: 0, lineHeight: "1.6" },
-
-  // REVIEWS
-  reviewsSection: {
-    maxWidth: "900px",
-    margin: "0 auto",
-    padding: "80px 24px",
-    position: "relative",
-    zIndex: 1,
-  },
-  reviewsGrid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(3, 1fr)",
-    gap: "16px",
-  },
-  reviewCard: {
-    background: "rgba(255,255,255,0.02)",
-    border: "1px solid rgba(255,255,255,0.06)",
-    borderRadius: "12px",
-    padding: "24px",
-  },
-  reviewText: { fontSize: "14px", color: "#94a3b8", lineHeight: "1.7", margin: "0 0 20px", fontStyle: "italic" },
+  featureDesc: { fontSize: "13px", margin: 0, lineHeight: "1.6" },
+  reviewsSection: { maxWidth: "900px", margin: "0 auto", padding: "80px 24px", position: "relative", zIndex: 1 },
+  reviewsGrid: { display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "16px" },
+  reviewCard: { borderRadius: "12px", padding: "24px" },
+  reviewText: { fontSize: "14px", lineHeight: "1.7", margin: "0 0 20px", fontStyle: "italic" },
   reviewAuthor: { display: "flex", flexDirection: "column", gap: "2px" },
   reviewName: { fontSize: "13px", fontWeight: "700", color: "#f1f5f9" },
   reviewRole: { fontSize: "12px", color: "#475569" },
-
-  // CTA
-  ctaSection: {
-    padding: "80px 24px",
-    position: "relative",
-    zIndex: 1,
-  },
-  ctaBox: {
-    maxWidth: "600px",
-    margin: "0 auto",
-    textAlign: "center",
-    background: "rgba(99,102,241,0.06)",
-    border: "1px solid rgba(99,102,241,0.2)",
-    borderRadius: "20px",
-    padding: "60px 40px",
-  },
+  ctaSection: { padding: "80px 24px", position: "relative", zIndex: 1 },
+  ctaBox: { maxWidth: "600px", margin: "0 auto", textAlign: "center", borderRadius: "20px", padding: "60px 40px" },
   ctaTitle: { fontSize: "28px", fontWeight: "800", color: "#f1f5f9", margin: "0 0 12px", letterSpacing: "-0.5px" },
   ctaSub: { fontSize: "14px", color: "#475569", margin: "0 0 32px" },
-  ctaBtn: {
-    background: "#6366f1",
-    border: "none",
-    padding: "14px 32px",
-    borderRadius: "10px",
-    color: "white",
-    fontSize: "15px",
-    fontWeight: "600",
-    cursor: "pointer",
-    minHeight: "48px",
-  },
-
-  // FOOTER
-  footer: {
-    borderTop: "1px solid rgba(255,255,255,0.05)",
-    padding: "32px 24px",
-    position: "relative",
-    zIndex: 1,
-  },
-  footerInner: {
-    maxWidth: "1100px",
-    margin: "0 auto",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  footerBrand: {
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-  },
+  ctaBtn: { background: "#6366f1", border: "none", padding: "14px 32px", borderRadius: "10px", color: "white", fontSize: "15px", fontWeight: "600", cursor: "pointer", minHeight: "48px" },
+  footer: { padding: "32px 24px", position: "relative", zIndex: 1 },
+  footerInner: { maxWidth: "1100px", margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center" },
+  footerBrand: { display: "flex", alignItems: "center", gap: "8px" },
   footerCopy: { fontSize: "12px", color: "#334155", margin: 0 },
-  mobileMenu: {
-    display: "flex",
-    flexDirection: "column",
-    padding: "12px 20px 20px",
-    borderTop: "1px solid rgba(255,255,255,0.06)",
-    gap: "4px",
-  },
-  mobileMenuLink: {
-    background: "none",
-    border: "none",
-    color: "#94a3b8",
-    fontSize: "15px",
-    fontWeight: "500",
-    cursor: "pointer",
-    padding: "12px 0",
-    textAlign: "left",
-    borderBottom: "1px solid rgba(255,255,255,0.04)",
-    minHeight: "44px",
-  },
-  mobileMenuUser: {
-    color: "#64748b",
-    fontSize: "14px",
-    padding: "12px 0",
-  },
-  mobileMenuCta: {
-    background: "#6366f1",
-    border: "none",
-    padding: "14px 16px",
-    borderRadius: "8px",
-    color: "white",
-    fontSize: "14px",
-    fontWeight: "600",
-    cursor: "pointer",
-    marginTop: "8px",
-    minHeight: "48px",
-  },
+  mobileMenu: { display: "flex", flexDirection: "column", padding: "12px 20px 20px", borderTop: "1px solid rgba(255,255,255,0.06)", gap: "4px" },
+  mobileMenuLink: { background: "none", border: "none", color: "#94a3b8", fontSize: "15px", fontWeight: "500", cursor: "pointer", padding: "12px 0", textAlign: "left", borderBottom: "1px solid rgba(255,255,255,0.04)", minHeight: "44px" },
+  mobileMenuUser: { color: "#64748b", fontSize: "14px", padding: "12px 0" },
+  mobileMenuCta: { background: "#6366f1", border: "none", padding: "14px 16px", borderRadius: "8px", color: "white", fontSize: "14px", fontWeight: "600", cursor: "pointer", marginTop: "8px", minHeight: "48px" },
 };
