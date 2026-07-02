@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
+import { useBreakpoint } from "../hooks/useBreakpoint";
 import api from "../services/api";
 
 export default function AuthPage() {
@@ -9,6 +10,8 @@ export default function AuthPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const redirectTo = searchParams.get("redirect") || "/";
+  const bp = useBreakpoint();
+  const { isMobile } = bp;
 
   const [mode, setMode] = useState(
     searchParams.get("mode") === "register" ? "register" : "login"
@@ -63,8 +66,19 @@ export default function AuthPage() {
 
   return (
     <div style={s.page}>
-      <div style={s.ambientTop} />
-      <div style={s.grid} />
+      {/* Stronger glow on mobile */}
+      <div style={{
+        ...s.ambientTop,
+        background: isMobile
+          ? "radial-gradient(circle, rgba(99,102,241,0.28) 0%, transparent 70%)"
+          : "radial-gradient(circle, rgba(99,102,241,0.12) 0%, transparent 70%)",
+      }} />
+      <div style={{
+        ...s.grid,
+        backgroundImage: isMobile
+          ? "linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)"
+          : "linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px)",
+      }} />
 
       <div style={s.centerWrap}>
         {/* BRAND */}
@@ -72,8 +86,16 @@ export default function AuthPage() {
           <span style={s.brandLogo}>▲</span>
           <span style={s.brandName}>InterviewAI</span>
         </div>
+
         <motion.div
-          style={s.card}
+          style={{
+            ...s.card,
+            // Stronger card on mobile
+            background: isMobile ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.03)",
+            border: isMobile ? "1px solid rgba(255,255,255,0.14)" : "1px solid rgba(255,255,255,0.08)",
+            boxShadow: isMobile ? "0 8px 40px rgba(0,0,0,0.5)" : "none",
+            padding: isMobile ? "28px 20px" : "32px",
+          }}
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
@@ -83,7 +105,10 @@ export default function AuthPage() {
             <h1 style={s.cardTitle}>
               {mode === "login" ? "Welcome back" : "Create account"}
             </h1>
-            <p style={s.cardSub}>
+            <p style={{
+              ...s.cardSub,
+              color: isMobile ? "#64748b" : "#475569",
+            }}>
               {mode === "login"
                 ? "Sign in to continue your interview practice."
                 : "Start practicing interviews with AI feedback."}
@@ -91,15 +116,19 @@ export default function AuthPage() {
           </div>
 
           {/* MODE TOGGLE */}
-          <div style={s.toggle}>
+          <div style={{
+            ...s.toggle,
+            background: isMobile ? "rgba(255,255,255,0.07)" : "rgba(255,255,255,0.04)",
+            border: isMobile ? "1px solid rgba(255,255,255,0.12)" : "1px solid rgba(255,255,255,0.06)",
+          }}>
             {["login", "register"].map((m) => (
               <button
                 key={m}
                 style={{
                   ...s.toggleBtn,
-                  background: mode === m ? "rgba(99,102,241,0.15)" : "transparent",
-                  color: mode === m ? "#818cf8" : "#475569",
-                  borderColor: mode === m ? "rgba(99,102,241,0.3)" : "transparent",
+                  background: mode === m ? "rgba(99,102,241,0.2)" : "transparent",
+                  color: mode === m ? "#818cf8" : isMobile ? "#64748b" : "#475569",
+                  borderColor: mode === m ? "rgba(99,102,241,0.4)" : "transparent",
                 }}
                 onClick={() => { setMode(m); setError(""); }}
               >
@@ -122,7 +151,11 @@ export default function AuthPage() {
                   <div style={s.fieldWrap}>
                     <label style={s.label}>Full Name</label>
                     <input
-                      style={s.input}
+                      style={{
+                        ...s.input,
+                        border: isMobile ? "1px solid rgba(255,255,255,0.16)" : "1px solid rgba(255,255,255,0.08)",
+                        background: isMobile ? "rgba(0,0,0,0.4)" : "rgba(0,0,0,0.3)",
+                      }}
                       placeholder="John Smith"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
@@ -136,7 +169,11 @@ export default function AuthPage() {
             <div style={s.fieldWrap}>
               <label style={s.label}>Email</label>
               <input
-                style={s.input}
+                style={{
+                  ...s.input,
+                  border: isMobile ? "1px solid rgba(255,255,255,0.16)" : "1px solid rgba(255,255,255,0.08)",
+                  background: isMobile ? "rgba(0,0,0,0.4)" : "rgba(0,0,0,0.3)",
+                }}
                 type="email"
                 placeholder="you@example.com"
                 value={email}
@@ -148,7 +185,11 @@ export default function AuthPage() {
             <div style={s.fieldWrap}>
               <label style={s.label}>Password</label>
               <input
-                style={s.input}
+                style={{
+                  ...s.input,
+                  border: isMobile ? "1px solid rgba(255,255,255,0.16)" : "1px solid rgba(255,255,255,0.08)",
+                  background: isMobile ? "rgba(0,0,0,0.4)" : "rgba(0,0,0,0.3)",
+                }}
                 type="password"
                 placeholder="••••••••"
                 value={password}
@@ -156,16 +197,24 @@ export default function AuthPage() {
                 required
               />
             </div>
+
             {mode === "login" && (
-  <div style={{ textAlign: "right", marginTop: -8, marginBottom: 12 }}>
-    <span
-      style={{ color: "#6366f1", fontSize: 12, cursor: "pointer" }}
-      onClick={() => navigate("/forgot-password")}
-    >
-      Forgot password?
-    </span>
-  </div>
-)}
+              <div style={{ textAlign: "right", marginTop: -8, marginBottom: 4 }}>
+                <span
+                  style={{
+                    color: "#6366f1",
+                    fontSize: 12,
+                    cursor: "pointer",
+                    // Easier to tap on mobile
+                    padding: isMobile ? "8px 0" : "0",
+                    display: isMobile ? "inline-block" : "inline",
+                  }}
+                  onClick={() => navigate("/forgot-password")}
+                >
+                  Forgot password?
+                </span>
+              </div>
+            )}
 
             <AnimatePresence mode="wait">
               {mode === "register" && (
@@ -179,7 +228,11 @@ export default function AuthPage() {
                   <div style={s.fieldWrap}>
                     <label style={s.label}>Confirm Password</label>
                     <input
-                      style={s.input}
+                      style={{
+                        ...s.input,
+                        border: isMobile ? "1px solid rgba(255,255,255,0.16)" : "1px solid rgba(255,255,255,0.08)",
+                        background: isMobile ? "rgba(0,0,0,0.4)" : "rgba(0,0,0,0.3)",
+                      }}
                       type="password"
                       placeholder="••••••••"
                       value={passwordConfirmation}
@@ -208,7 +261,12 @@ export default function AuthPage() {
 
             <button
               type="submit"
-              style={{ ...s.submitBtn, opacity: loading ? 0.7 : 1 }}
+              style={{
+                ...s.submitBtn,
+                opacity: loading ? 0.7 : 1,
+                boxShadow: isMobile ? "0 0 20px rgba(99,102,241,0.4)" : "none",
+                minHeight: "48px",
+              }}
               disabled={loading}
             >
               {loading
@@ -248,19 +306,16 @@ const s = {
     right: "-100px",
     width: "600px",
     height: "600px",
-    background: "radial-gradient(circle, rgba(99,102,241,0.12) 0%, transparent 70%)",
     pointerEvents: "none",
     zIndex: 0,
   },
   grid: {
     position: "fixed",
     inset: 0,
-    backgroundImage: "linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px)",
     backgroundSize: "80px 80px",
     pointerEvents: "none",
     zIndex: 0,
   },
-
   brand: {
     display: "flex",
     alignItems: "center",
@@ -271,7 +326,6 @@ const s = {
   },
   brandLogo: { fontSize: "14px", color: "#6366f1" },
   brandName: { fontSize: "14px", fontWeight: "700", color: "#f1f5f9" },
-
   centerWrap: {
     width: "100%",
     maxWidth: "400px",
@@ -282,42 +336,22 @@ const s = {
     position: "relative",
     zIndex: 1,
   },
-
   card: {
     width: "100%",
-    background: "rgba(255,255,255,0.03)",
-    border: "1px solid rgba(255,255,255,0.08)",
     borderRadius: "16px",
     padding: "32px",
     display: "flex",
     flexDirection: "column",
     gap: "24px",
     backdropFilter: "blur(12px)",
+    boxSizing: "border-box",
   },
-
-  cardHeader: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "6px",
-  },
-  cardTitle: {
-    fontSize: "22px",
-    fontWeight: "800",
-    color: "#f1f5f9",
-    margin: 0,
-    letterSpacing: "-0.3px",
-  },
-  cardSub: {
-    fontSize: "13px",
-    color: "#475569",
-    margin: 0,
-  },
-
+  cardHeader: { display: "flex", flexDirection: "column", gap: "6px" },
+  cardTitle: { fontSize: "22px", fontWeight: "800", color: "#f1f5f9", margin: 0, letterSpacing: "-0.3px" },
+  cardSub: { fontSize: "13px", margin: 0 },
   toggle: {
     display: "flex",
     gap: "4px",
-    background: "rgba(255,255,255,0.04)",
-    border: "1px solid rgba(255,255,255,0.06)",
     borderRadius: "8px",
     padding: "4px",
   },
@@ -330,18 +364,10 @@ const s = {
     fontWeight: "600",
     cursor: "pointer",
     transition: "all 0.2s",
+    minHeight: "40px",
   },
-
-  form: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "16px",
-  },
-  fieldWrap: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "6px",
-  },
+  form: { display: "flex", flexDirection: "column", gap: "16px" },
+  fieldWrap: { display: "flex", flexDirection: "column", gap: "6px" },
   label: {
     fontSize: "12px",
     fontWeight: "600",
@@ -350,17 +376,17 @@ const s = {
     letterSpacing: "0.4px",
   },
   input: {
-    padding: "11px 14px",
+    padding: "12px 14px",
     borderRadius: "8px",
-    border: "1px solid rgba(255,255,255,0.08)",
-    background: "rgba(0,0,0,0.3)",
     color: "#e2e8f0",
     fontSize: "14px",
     outline: "none",
     fontFamily: "inherit",
     transition: "border-color 0.2s",
+    minHeight: "48px",
+    boxSizing: "border-box",
+    width: "100%",
   },
-
   errorBox: {
     display: "flex",
     alignItems: "center",
@@ -373,7 +399,6 @@ const s = {
     color: "#fca5a5",
   },
   errorIcon: { fontSize: "12px" },
-
   submitBtn: {
     padding: "13px",
     borderRadius: "8px",
@@ -385,16 +410,8 @@ const s = {
     cursor: "pointer",
     marginTop: "4px",
     transition: "opacity 0.2s",
+    width: "100%",
   },
-
-  footerNote: {
-    fontSize: "12px",
-    color: "#334155",
-    textAlign: "center",
-    margin: 0,
-  },
-  footerLink: {
-    color: "#475569",
-    cursor: "pointer",
-  },
+  footerNote: { fontSize: "12px", color: "#334155", textAlign: "center", margin: 0 },
+  footerLink: { color: "#475569", cursor: "pointer" },
 };
