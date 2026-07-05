@@ -117,18 +117,38 @@ export default function Interview() {
     ? ((interview.currentIndex) / questions.length) * 100
     : 0;
 
+  // ── shared mobile-boosted card style ────────────────────────────────────
+  const mobileCard = isMobile ? {
+    background: "rgba(255,255,255,0.06)",
+    border: "1px solid rgba(255,255,255,0.14)",
+    boxShadow: "0 8px 40px rgba(0,0,0,0.4)",
+  } : {
+    background: "rgba(255,255,255,0.02)",
+    border: "1px solid rgba(255,255,255,0.06)",
+  };
+
   // LOADING
   if (authLoading || loadingQuestions) {
     return (
       <div style={s.page}>
-        <div style={s.ambientTop} />
-        <div style={s.grid} />
-        <motion.div
-          style={s.loadingWrap}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-        >
-          <div style={{ ...s.loadingCard, padding: isMobile ? "32px 24px" : "48px 40px" }}>
+        <div style={{
+          ...s.ambientTop,
+          background: isMobile
+            ? "radial-gradient(circle, rgba(99,102,241,0.28) 0%, transparent 70%)"
+            : s.ambientTop.background,
+        }} />
+        <div style={{
+          ...s.grid,
+          backgroundImage: isMobile
+            ? "linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)"
+            : s.grid.backgroundImage,
+        }} />
+        <motion.div style={s.loadingWrap} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+          <div style={{
+            ...s.loadingCard,
+            ...mobileCard,
+            padding: isMobile ? "32px 20px" : "48px 40px",
+          }}>
             <div style={s.loadingIcon}>
               <motion.div
                 style={s.loadingSpinner}
@@ -147,7 +167,7 @@ export default function Interview() {
               {["Analyzing role requirements", "Generating tailored questions", "Calibrating difficulty"].map((step, i) => (
                 <motion.div
                   key={step}
-                  style={s.loadingStep}
+                  style={{ ...s.loadingStep, color: isMobile ? "#94a3b8" : "#475569" }}
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: i * 0.3 + 0.5 }}
@@ -174,7 +194,7 @@ export default function Interview() {
         <div style={s.ambientTop} />
         <div style={s.grid} />
         <div style={s.centerWrap}>
-          <div style={{ ...s.emptyCard, padding: isMobile ? "32px 20px" : "48px 40px" }}>
+          <div style={{ ...s.emptyCard, ...mobileCard, padding: isMobile ? "32px 20px" : "48px 40px" }}>
             <span style={s.emptyIcon}>◎</span>
             <h1 style={s.emptyTitle}>No interview configured</h1>
             <p style={s.emptyDesc}>Go back to the home page and choose a role and difficulty level to begin.</p>
@@ -192,7 +212,7 @@ export default function Interview() {
         <div style={s.ambientTop} />
         <div style={s.grid} />
         <div style={s.centerWrap}>
-          <div style={{ ...s.emptyCard, padding: isMobile ? "32px 20px" : "48px 40px" }}>
+          <div style={{ ...s.emptyCard, ...mobileCard, padding: isMobile ? "32px 20px" : "48px 40px" }}>
             <span style={{ ...s.emptyIcon, color: "#ef4444" }}>⚠</span>
             <h1 style={s.emptyTitle}>Something went wrong</h1>
             <p style={{ ...s.emptyDesc, color: "#ef4444" }}>{loadError}</p>
@@ -210,7 +230,7 @@ export default function Interview() {
         <div style={s.ambientTop} />
         <div style={s.grid} />
         <div style={s.centerWrap}>
-          <div style={{ ...s.emptyCard, padding: isMobile ? "32px 20px" : "48px 40px" }}>
+          <div style={{ ...s.emptyCard, ...mobileCard, padding: isMobile ? "32px 20px" : "48px 40px" }}>
             <span style={s.emptyIcon}>◌</span>
             <h1 style={s.emptyTitle}>No questions found</h1>
             <p style={s.emptyDesc}>Try a different role or difficulty level.</p>
@@ -244,11 +264,28 @@ export default function Interview() {
   // MAIN INTERVIEW
   return (
     <div style={s.page}>
-      <div style={s.ambientTop} />
-      <div style={s.grid} />
+      {/* Stronger ambient glow on mobile */}
+      <div style={{
+        ...s.ambientTop,
+        background: isMobile
+          ? "radial-gradient(circle, rgba(99,102,241,0.28) 0%, transparent 70%)"
+          : s.ambientTop.background,
+      }} />
+      {/* Stronger grid on mobile */}
+      <div style={{
+        ...s.grid,
+        backgroundImage: isMobile
+          ? "linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)"
+          : s.grid.backgroundImage,
+      }} />
 
       {/* TOPBAR */}
-      <div style={s.topbar}>
+      <div style={{
+        ...s.topbar,
+        borderBottom: isMobile
+          ? "1px solid rgba(255,255,255,0.12)"
+          : "1px solid rgba(255,255,255,0.06)",
+      }}>
         <div style={{
           ...s.topbarInner,
           gridTemplateColumns: isMobile ? "1fr 1fr" : "1fr auto 1fr",
@@ -256,7 +293,13 @@ export default function Interview() {
         }}>
           {/* LEFT */}
           <div style={s.topbarLeft}>
-            <button style={s.backBtn} onClick={() => setShowExitModal(true)}>
+            <button style={{
+              ...s.backBtn,
+              border: isMobile
+                ? "1px solid rgba(255,255,255,0.14)"
+                : "1px solid rgba(255,255,255,0.08)",
+              color: isMobile ? "#94a3b8" : "#64748b",
+            }} onClick={() => setShowExitModal(true)}>
               ← Exit
             </button>
             <div style={s.topbarDivider} />
@@ -293,16 +336,22 @@ export default function Interview() {
             {!isMobile && (
               <span style={s.topbarUser}>{user?.name}</span>
             )}
-            <button style={s.topbarLogout} onClick={logout}>Logout</button>
+            <button style={{
+              ...s.topbarLogout,
+              border: isMobile
+                ? "1px solid rgba(255,255,255,0.10)"
+                : "1px solid rgba(255,255,255,0.06)",
+              color: isMobile ? "#94a3b8" : "#475569",
+            }} onClick={logout}>Logout</button>
           </div>
         </div>
       </div>
 
-      {/* MOBILE PROGRESS BAR */}
+      {/* MOBILE PROGRESS BAR — stronger than original */}
       {isMobile && (
         <div style={{
-          background: "rgba(255,255,255,0.04)",
-          borderBottom: "1px solid rgba(255,255,255,0.06)",
+          background: "rgba(255,255,255,0.05)",
+          borderBottom: "1px solid rgba(255,255,255,0.12)",
           padding: "8px 16px",
           display: "flex",
           alignItems: "center",
@@ -313,8 +362,8 @@ export default function Interview() {
         }}>
           <div style={{
             flex: 1,
-            height: "3px",
-            background: "rgba(255,255,255,0.08)",
+            height: "4px",
+            background: "rgba(255,255,255,0.10)",
             borderRadius: "2px",
             overflow: "hidden",
           }}>
@@ -330,17 +379,32 @@ export default function Interview() {
           </div>
           <span style={{
             fontSize: "11px",
-            color: "#475569",
+            color: "#94a3b8",
             fontWeight: "600",
             whiteSpace: "nowrap",
           }}>
             {interview.currentIndex + 1} / {questions.length}
           </span>
+          {/* Difficulty badge — visible on mobile since topbar has no room */}
+          <span style={{
+            fontSize: "10px",
+            fontWeight: "700",
+            color: difficultyColor,
+            background: `${difficultyColor}20`,
+            border: `1px solid ${difficultyColor}50`,
+            borderRadius: "4px",
+            padding: "2px 7px",
+          }}>
+            {difficultyLabel}
+          </span>
         </div>
       )}
 
       {/* MAIN CONTENT */}
-      <div style={{ ...s.main, padding: isMobile ? "24px 16px" : "48px 24px" }}>
+      <div style={{
+        ...s.main,
+        padding: isMobile ? "20px 14px 40px" : "48px 24px",
+      }}>
         <AnimatePresence mode="wait">
           <motion.div
             key={interview.currentIndex}
@@ -356,7 +420,7 @@ export default function Interview() {
               {interview.timeLeft !== undefined && (
                 <span style={{
                   ...s.timer,
-                  color: interview.timeLeft < 30 ? "#ef4444" : "#475569",
+                  color: interview.timeLeft < 30 ? "#ef4444" : isMobile ? "#64748b" : "#475569",
                 }}>
                   {Math.floor(interview.timeLeft / 60)}:{String(interview.timeLeft % 60).padStart(2, "0")}
                 </span>
@@ -391,6 +455,9 @@ export default function Interview() {
             style={{
               ...s.modalCard,
               width: isMobile ? "calc(100vw - 48px)" : 340,
+              border: isMobile
+                ? "1px solid rgba(255,255,255,0.16)"
+                : "1px solid rgba(255,255,255,0.1)",
             }}
             initial={{ opacity: 0, scale: 0.92, y: 16 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -454,7 +521,6 @@ const s = {
     zIndex: 100,
     background: "rgba(8,12,20,0.9)",
     backdropFilter: "blur(16px)",
-    borderBottom: "1px solid rgba(255,255,255,0.06)",
   },
   topbarInner: {
     maxWidth: "1100px",
@@ -466,306 +532,61 @@ const s = {
     alignItems: "center",
     gap: "16px",
   },
-  topbarLeft: {
-    display: "flex",
-    alignItems: "center",
-    gap: "12px",
-  },
+  topbarLeft: { display: "flex", alignItems: "center", gap: "12px" },
   backBtn: {
     background: "transparent",
-    border: "1px solid rgba(255,255,255,0.08)",
     padding: "5px 12px",
     borderRadius: "6px",
-    color: "#64748b",
     fontSize: "12px",
     cursor: "pointer",
     minHeight: "44px",
     whiteSpace: "nowrap",
   },
-  topbarDivider: {
-    width: "1px",
-    height: "20px",
-    background: "rgba(255,255,255,0.08)",
-  },
-  sessionInfo: {
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-  },
-  sessionRole: {
-    fontSize: "13px",
-    fontWeight: "700",
-    color: "#f1f5f9",
-  },
-  sessionDiff: {
-    fontSize: "11px",
-    fontWeight: "600",
-    background: "rgba(255,255,255,0.06)",
-    padding: "2px 8px",
-    borderRadius: "4px",
-  },
-  topbarCenter: {
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    gap: "4px",
-  },
-  progressWrap: {
-    display: "flex",
-    alignItems: "center",
-    gap: "10px",
-    width: "240px",
-  },
-  progressBar: {
-    flex: 1,
-    height: "3px",
-    background: "rgba(255,255,255,0.08)",
-    borderRadius: "2px",
-    overflow: "hidden",
-  },
-  progressFill: {
-    height: "100%",
-    background: "linear-gradient(90deg, #6366f1, #818cf8)",
-    borderRadius: "2px",
-  },
-  progressLabel: {
-    fontSize: "12px",
-    color: "#475569",
-    fontWeight: "600",
-    whiteSpace: "nowrap",
-  },
-  topbarRight: {
-    display: "flex",
-    alignItems: "center",
-    gap: "12px",
-    justifyContent: "flex-end",
-  },
-  topbarUser: {
-    fontSize: "13px",
-    color: "#475569",
-  },
+  topbarDivider: { width: "1px", height: "20px", background: "rgba(255,255,255,0.08)" },
+  sessionInfo: { display: "flex", alignItems: "center", gap: "8px" },
+  sessionRole: { fontSize: "13px", fontWeight: "700", color: "#f1f5f9" },
+  sessionDiff: { fontSize: "11px", fontWeight: "600", background: "rgba(255,255,255,0.06)", padding: "2px 8px", borderRadius: "4px" },
+  topbarCenter: { display: "flex", flexDirection: "column", alignItems: "center", gap: "4px" },
+  progressWrap: { display: "flex", alignItems: "center", gap: "10px", width: "240px" },
+  progressBar: { flex: 1, height: "3px", background: "rgba(255,255,255,0.08)", borderRadius: "2px", overflow: "hidden" },
+  progressFill: { height: "100%", background: "linear-gradient(90deg, #6366f1, #818cf8)", borderRadius: "2px" },
+  progressLabel: { fontSize: "12px", color: "#475569", fontWeight: "600", whiteSpace: "nowrap" },
+  topbarRight: { display: "flex", alignItems: "center", gap: "12px", justifyContent: "flex-end" },
+  topbarUser: { fontSize: "13px", color: "#475569" },
   topbarLogout: {
     background: "transparent",
-    border: "1px solid rgba(255,255,255,0.06)",
     padding: "5px 10px",
     borderRadius: "6px",
-    color: "#475569",
     fontSize: "12px",
     cursor: "pointer",
     minHeight: "44px",
   },
-  main: {
-    maxWidth: "800px",
-    margin: "0 auto",
-    padding: "48px 24px",
-    position: "relative",
-    zIndex: 1,
-  },
-  cardWrap: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "16px",
-  },
-  questionHeader: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: "4px",
-  },
-  questionNum: {
-    fontSize: "12px",
-    fontWeight: "600",
-    color: "#6366f1",
-    textTransform: "uppercase",
-    letterSpacing: "0.5px",
-  },
-  timer: {
-    fontSize: "13px",
-    fontWeight: "600",
-    fontVariantNumeric: "tabular-nums",
-  },
-  loadingWrap: {
-    minHeight: "100vh",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: "24px",
-    position: "relative",
-    zIndex: 1,
-  },
-  loadingCard: {
-    background: "rgba(255,255,255,0.03)",
-    border: "1px solid rgba(255,255,255,0.08)",
-    borderRadius: "20px",
-    padding: "48px 40px",
-    textAlign: "center",
-    maxWidth: "400px",
-    width: "100%",
-  },
-  loadingIcon: {
-    display: "flex",
-    justifyContent: "center",
-    marginBottom: "24px",
-  },
-  loadingSpinner: {
-    width: "36px",
-    height: "36px",
-    border: "2px solid rgba(99,102,241,0.2)",
-    borderTop: "2px solid #6366f1",
-    borderRadius: "50%",
-  },
-  loadingTitle: {
-    fontSize: "20px",
-    fontWeight: "700",
-    color: "#f1f5f9",
-    margin: "0 0 8px",
-    letterSpacing: "-0.3px",
-  },
-  loadingDesc: {
-    fontSize: "14px",
-    color: "#475569",
-    margin: "0 0 32px",
-  },
-  loadingSteps: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "10px",
-    textAlign: "left",
-  },
-  loadingStep: {
-    display: "flex",
-    alignItems: "center",
-    gap: "10px",
-    fontSize: "13px",
-    color: "#475569",
-  },
-  loadingStepDot: {
-    width: "6px",
-    height: "6px",
-    borderRadius: "50%",
-    background: "#6366f1",
-    flexShrink: 0,
-    display: "inline-block",
-  },
-  centerWrap: {
-    minHeight: "100vh",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: "24px",
-    position: "relative",
-    zIndex: 1,
-  },
-  emptyCard: {
-    background: "rgba(255,255,255,0.02)",
-    border: "1px solid rgba(255,255,255,0.06)",
-    borderRadius: "20px",
-    padding: "48px 40px",
-    textAlign: "center",
-    maxWidth: "400px",
-    width: "100%",
-    boxSizing: "border-box",
-  },
-  emptyIcon: {
-    fontSize: "32px",
-    color: "#6366f1",
-    display: "block",
-    marginBottom: "20px",
-  },
-  emptyTitle: {
-    fontSize: "22px",
-    fontWeight: "700",
-    color: "#f1f5f9",
-    margin: "0 0 10px",
-  },
-  emptyDesc: {
-    fontSize: "14px",
-    color: "#475569",
-    margin: "0 0 28px",
-    lineHeight: "1.6",
-  },
-  emptyBtn: {
-    background: "rgba(99,102,241,0.1)",
-    border: "1px solid rgba(99,102,241,0.3)",
-    padding: "10px 20px",
-    borderRadius: "8px",
-    color: "#818cf8",
-    fontSize: "14px",
-    cursor: "pointer",
-    minHeight: "44px",
-  },
-  modalOverlay: {
-    position: "fixed",
-    inset: 0,
-    background: "rgba(0,0,0,0.75)",
-    backdropFilter: "blur(8px)",
-    WebkitBackdropFilter: "blur(8px)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    zIndex: 200,
-    padding: "24px",
-    boxSizing: "border-box",
-  },
-  modalCard: {
-    background: "rgba(15,20,35,0.95)",
-    border: "1px solid rgba(255,255,255,0.1)",
-    borderRadius: "20px",
-    padding: "32px 28px",
-    width: 340,
-    display: "flex",
-    flexDirection: "column",
-    boxSizing: "border-box",
-  },
-  modalIconWrap: {
-    width: 42,
-    height: 42,
-    borderRadius: "50%",
-    background: "rgba(245,158,11,0.15)",
-    border: "1px solid rgba(245,158,11,0.4)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: "18px",
-    fontSize: "18px",
-    color: "#fbbf24",
-  },
-  modalTitle: {
-    fontSize: 17,
-    fontWeight: 700,
-    margin: "0 0 8px",
-    color: "#f1f5f9",
-    letterSpacing: "-0.2px",
-  },
-  modalDesc: {
-    fontSize: 13,
-    color: "#64748b",
-    margin: "0 0 24px",
-    lineHeight: 1.65,
-  },
-  modalActions: {
-    display: "flex",
-    flexDirection: "column",
-    gap: 8,
-  },
-  modalExitBtn: {
-    padding: "10px 16px",
-    background: "rgba(239,68,68,0.12)",
-    border: "1px solid rgba(239,68,68,0.3)",
-    borderRadius: "10px",
-    color: "#f87171",
-    fontSize: 13,
-    fontWeight: 600,
-    cursor: "pointer",
-  },
-  modalCancelBtn: {
-    padding: "10px 16px",
-    background: "rgba(255,255,255,0.04)",
-    border: "1px solid rgba(255,255,255,0.08)",
-    borderRadius: "10px",
-    color: "#94a3b8",
-    fontSize: 13,
-    fontWeight: 500,
-    cursor: "pointer",
-  },
+  main: { maxWidth: "800px", margin: "0 auto", padding: "48px 24px", position: "relative", zIndex: 1 },
+  cardWrap: { display: "flex", flexDirection: "column", gap: "16px" },
+  questionHeader: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" },
+  questionNum: { fontSize: "12px", fontWeight: "600", color: "#6366f1", textTransform: "uppercase", letterSpacing: "0.5px" },
+  timer: { fontSize: "13px", fontWeight: "600", fontVariantNumeric: "tabular-nums" },
+  loadingWrap: { minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "24px", position: "relative", zIndex: 1 },
+  loadingCard: { borderRadius: "20px", padding: "48px 40px", textAlign: "center", maxWidth: "400px", width: "100%", boxSizing: "border-box" },
+  loadingIcon: { display: "flex", justifyContent: "center", marginBottom: "24px" },
+  loadingSpinner: { width: "36px", height: "36px", border: "2px solid rgba(99,102,241,0.2)", borderTop: "2px solid #6366f1", borderRadius: "50%" },
+  loadingTitle: { fontSize: "20px", fontWeight: "700", color: "#f1f5f9", margin: "0 0 8px", letterSpacing: "-0.3px" },
+  loadingDesc: { fontSize: "14px", color: "#475569", margin: "0 0 32px" },
+  loadingSteps: { display: "flex", flexDirection: "column", gap: "10px", textAlign: "left" },
+  loadingStep: { display: "flex", alignItems: "center", gap: "10px", fontSize: "13px", color: "#475569" },
+  loadingStepDot: { width: "6px", height: "6px", borderRadius: "50%", background: "#6366f1", flexShrink: 0, display: "inline-block" },
+  centerWrap: { minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "24px", position: "relative", zIndex: 1 },
+  emptyCard: { borderRadius: "20px", padding: "48px 40px", textAlign: "center", maxWidth: "400px", width: "100%", boxSizing: "border-box" },
+  emptyIcon: { fontSize: "32px", color: "#6366f1", display: "block", marginBottom: "20px" },
+  emptyTitle: { fontSize: "22px", fontWeight: "700", color: "#f1f5f9", margin: "0 0 10px" },
+  emptyDesc: { fontSize: "14px", color: "#475569", margin: "0 0 28px", lineHeight: "1.6" },
+  emptyBtn: { background: "rgba(99,102,241,0.1)", border: "1px solid rgba(99,102,241,0.3)", padding: "10px 20px", borderRadius: "8px", color: "#818cf8", fontSize: "14px", cursor: "pointer", minHeight: "44px" },
+  modalOverlay: { position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 200, padding: "24px", boxSizing: "border-box" },
+  modalCard: { background: "rgba(15,20,35,0.95)", borderRadius: "20px", padding: "32px 28px", width: 340, display: "flex", flexDirection: "column", boxSizing: "border-box" },
+  modalIconWrap: { width: 42, height: 42, borderRadius: "50%", background: "rgba(245,158,11,0.15)", border: "1px solid rgba(245,158,11,0.4)", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "18px", fontSize: "18px", color: "#fbbf24" },
+  modalTitle: { fontSize: 17, fontWeight: 700, margin: "0 0 8px", color: "#f1f5f9", letterSpacing: "-0.2px" },
+  modalDesc: { fontSize: 13, color: "#64748b", margin: "0 0 24px", lineHeight: 1.65 },
+  modalActions: { display: "flex", flexDirection: "column", gap: 8 },
+  modalExitBtn: { padding: "10px 16px", background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.3)", borderRadius: "10px", color: "#f87171", fontSize: 13, fontWeight: 600, cursor: "pointer", minHeight: "44px" },
+  modalCancelBtn: { padding: "10px 16px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "10px", color: "#94a3b8", fontSize: 13, fontWeight: 500, cursor: "pointer", minHeight: "44px" },
 };
